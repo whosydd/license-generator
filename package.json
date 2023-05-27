@@ -1,0 +1,97 @@
+{
+  "name": "license-generator",
+  "displayName": "License Generator",
+  "description": "Generate a license with GitHub license API",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "license": "MIT",
+  "publisher": "whosydd",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whosydd/license-generator"
+  },
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "license-generator.setToken",
+        "title": "Set Token",
+        "category": "License"
+      },
+      {
+        "command": "license-generator.generate",
+        "title": "Generate License",
+        "category": "License"
+      },
+      {
+        "command": "license-generator.generate-mit",
+        "title": "Generate MIT License",
+        "category": "License"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "license-generator.generate",
+          "group": "1_modification",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "license-generator.generate-mit",
+          "group": "1_modification",
+          "when": "explorerResourceIsFolder"
+        }
+      ]
+    },
+    "configuration": [
+      {
+        "title": "License Generator: Configuration",
+        "properties": {
+          "license-generator.token": {
+            "type": "string",
+            "description": "<Personal Access Tokens> from https://github.com/settings/tokens"
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@octokit/types": "^9.2.3",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.78.0",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
+    "@vscode/test-electron": "^2.2.3",
+    "eslint": "^8.34.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "prettier": "^2.8.8",
+    "ts-loader": "^9.4.2",
+    "typescript": "^4.9.5",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
+  },
+  "dependencies": {
+    "@octokit/rest": "^19.0.11"
+  }
+}
