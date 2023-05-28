@@ -95,7 +95,9 @@ const download = async (context: vscode.ExtensionContext, key: string, text: str
 
   const yearReplacedText = replaceYear(year, key, text)
 
-  cp.exec('git config --global --get user.name', async (err, stdout, stderr) => {
+  const root = vscode.workspace.workspaceFolders![0]
+
+  cp.exec('git config --get user.name', { cwd: root.uri.fsPath }, async (err, stdout, stderr) => {
     let author
 
     if (err) {
@@ -126,9 +128,11 @@ const download = async (context: vscode.ExtensionContext, key: string, text: str
         progress.report({
           message: 'Downloading ...',
         })
-        const root = vscode.workspace.workspaceFolders![0].uri.fsPath
 
-        vscode.workspace.fs.writeFile(vscode.Uri.file(path.resolve(root, 'LICENSE')), content)
+        vscode.workspace.fs.writeFile(
+          vscode.Uri.file(path.resolve(root.uri.fsPath, 'LICENSE')),
+          content
+        )
       }
     )
   })

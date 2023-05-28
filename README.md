@@ -2,7 +2,7 @@
 
 ## Requirement
 
-The extension get `author` by `git config --global --get user.name`
+The extension get `author` by `git config --get user.name`
 
 Please confirm you already config it.
 
