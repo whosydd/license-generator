@@ -2,7 +2,10 @@ name: publish
 
 on:
   pull_request:
-    branches: [main]
+    types:
+      - 'closed'
+    branches:
+      - 'main'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
