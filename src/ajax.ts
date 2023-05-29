@@ -28,6 +28,9 @@ export const getLicense = (
       .then(res => {
         resolve(res)
       })
+      .catch(err => {
+        vscode.window.showErrorMessage(err.message)
+      })
   })
 }
 
