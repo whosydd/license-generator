@@ -33,14 +33,6 @@ jobs:
         id: get_version
         run: echo VERSION=$(jq -r .version package.json) >> $GITHUB_OUTPUT
 
-      - name: Publish to Visual Studio Marketplace
-        if: hashFiles('${{steps.get_name.outputs.NAME}}-${{steps.get_version.outputs.VERSION}}.vsix')
-        uses: HaaLeo/publish-vscode-extension@v1
-        with:
-          yarn: true
-          pat: ${{ secrets.VSCE_PAT }}
-          registryUrl: https://marketplace.visualstudio.com
-
       - name: Upload Package to Release Assets
         if: hashFiles('${{steps.get_name.outputs.NAME}}-${{steps.get_version.outputs.VERSION}}.vsix')
         uses: echapmanFromBunnings/upload-release-assets@1.3
@@ -50,3 +42,11 @@ jobs:
           overrideExistingArtefact: true
           files: |
             ${{steps.get_name.outputs.NAME}}-${{steps.get_version.outputs.VERSION}}.vsix
+
+      - name: Publish to Visual Studio Marketplace
+        if: hashFiles('${{steps.get_name.outputs.NAME}}-${{steps.get_version.outputs.VERSION}}.vsix')
+        uses: HaaLeo/publish-vscode-extension@v1
+        with:
+          yarn: true
+          pat: ${{ secrets.VSCE_PAT }}
+          registryUrl: https://marketplace.visualstudio.com
