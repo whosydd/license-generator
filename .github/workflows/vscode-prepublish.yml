@@ -1,9 +1,9 @@
-name: vscode prepublish
+name: VSCode Prepublish
 
 on:
   release:
     types:
-      - "prereleased"
+      - 'prereleased'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -16,11 +16,39 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 16
-      - run: yarn
+
+      - name: Install Dependencies
+        run: |
+          yarn
+          yarn add -D @vscode/vsce
+
+      - name: Package
+        run: yarn vsce package
+
+      - name: Get Name
+        id: get_name
+        run: echo NAME=$(jq -r .name package.json) >> $GITHUB_OUTPUT
+
+      - name: Get Version
+        id: get_version
+        run: echo VERSION=$(jq -r .version package.json) >> $GITHUB_OUTPUT
+
+      - name: Upload Package to Release Assets
+        if: hashFiles('${{steps.get_name.outputs.NAME}}-${{steps.get_version.outputs.VERSION}}.vsix')
+        uses: echapmanFromBunnings/upload-release-assets@1.3
+        with:
+          releaseTag: 'v${{steps.get_version.outputs.VERSION}}'
+          githubToken: ${{ secrets.GH_PAT }}
+          overrideExistingArtefact: true
+          files: |
+            ${{steps.get_name.outputs.NAME}}-${{steps.get_version.outputs.VERSION}}.vsix
+
       - name: Publish to Visual Studio Marketplace
+        if: hashFiles('${{steps.get_name.outputs.NAME}}-${{steps.get_version.outputs.VERSION}}.vsix')
         uses: HaaLeo/publish-vscode-extension@v1
         with:
           yarn: true
           preRelease: true
-          pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
+          pat: ${{ secrets.VSCE_PAT }}
+          extensionFile: ${{steps.get_name.outputs.NAME}}-${{steps.get_version.outputs.VERSION}}.vsix
           registryUrl: https://marketplace.visualstudio.com

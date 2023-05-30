@@ -3,6 +3,7 @@ import * as path from 'path'
 import { TextEncoder } from 'util'
 import * as vscode from 'vscode'
 import { getAllLicense, getLicense } from './ajax'
+import getWorkspace from './getWorkspace'
 import { setTokenHandler } from './pat'
 import { replaceAuthor, replaceYear } from './replace'
 
@@ -16,13 +17,13 @@ export function activate(context: vscode.ExtensionContext) {
     setTokenHandler('license-generator', 'License Generator')
   )
 
-  let disposable = vscode.commands.registerCommand('license-generator.generate', async () =>
-    generator(context)
-  )
+  let disposable = vscode.commands.registerCommand('license-generator.generate', async folder => {
+    generator(context, folder)
+  })
 
-  let mit = vscode.commands.registerCommand('license-generator.generate-mit', async () =>
-    generator(context, 'mit')
-  )
+  let mit = vscode.commands.registerCommand('license-generator.generate-mit', async folder => {
+    generator(context, folder, 'mit')
+  })
 
   context.subscriptions.push(disposable, setToken, mit)
 }
@@ -30,14 +31,22 @@ export function activate(context: vscode.ExtensionContext) {
 // This method is called when your extension is deactivated
 export function deactivate() {}
 
-const generator = async (context: vscode.ExtensionContext, license?: string) => {
+const generator = async (
+  context: vscode.ExtensionContext,
+  folder: vscode.Uri,
+  license?: string
+) => {
   try {
+    if (folder === undefined) {
+      folder = vscode.Uri.file(await getWorkspace())
+    }
+
     if (license) {
       const text = await getLicense(license)
       if (text.status !== 200) {
         throw new Error('bad request')
       }
-      download(context, license, text.data.body)
+      download(context, folder, license, text.data.body)
     } else {
       const licenses = await getAllLicense()
       if (licenses.status !== 200) {
@@ -68,7 +77,7 @@ const generator = async (context: vscode.ExtensionContext, license?: string) => 
         if (license.status !== 200) {
           throw new Error('bad request')
         }
-        download(context, select.key, license.data.body)
+        download(context, folder, select.key, license.data.body)
       })
 
       quickpick.onDidHide(() => {
@@ -82,7 +91,12 @@ const generator = async (context: vscode.ExtensionContext, license?: string) => 
   }
 }
 
-const download = async (context: vscode.ExtensionContext, key: string, text: string) => {
+const download = async (
+  context: vscode.ExtensionContext,
+  folder: vscode.Uri,
+  key: string,
+  text: string
+) => {
   let year = ''
   // context.workspaceState.update((select as QuickpickItem).key, undefined)
   let prevYear = context.workspaceState.get<number>(key)
@@ -95,9 +109,7 @@ const download = async (context: vscode.ExtensionContext, key: string, text: str
 
   const yearReplacedText = replaceYear(year, key, text)
 
-  const root = vscode.workspace.workspaceFolders![0]
-
-  cp.exec('git config --get user.name', { cwd: root.uri.fsPath }, async (err, stdout, stderr) => {
+  cp.exec('git config --get user.name', { cwd: folder.fsPath }, async (err, stdout, stderr) => {
     let author
 
     if (err) {
@@ -130,7 +142,7 @@ const download = async (context: vscode.ExtensionContext, key: string, text: str
         })
 
         vscode.workspace.fs.writeFile(
-          vscode.Uri.file(path.resolve(root.uri.fsPath, 'LICENSE')),
+          vscode.Uri.file(path.resolve(folder.fsPath, 'LICENSE')),
           content
         )
       }
