@@ -11,8 +11,9 @@ Please confirm you already config it.
 Use `explorer/context` and `command` to generate license with [GitHub license API](https://docs.github.com/en/rest/licenses)
 
 - Generate License
-
 - Generate MIT License
+
+> Use `command` to generate license only in the root directory of the workspace.
 
 ## Extension Settings (Optional)
 
