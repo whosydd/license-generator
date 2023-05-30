@@ -50,4 +50,5 @@ jobs:
           yarn: true
           preRelease: true
           pat: ${{ secrets.VSCE_PAT }}
+          extensionFile: ${{steps.get_name.outputs.NAME}}-${{steps.get_version.outputs.VERSION}}.vsix
           registryUrl: https://marketplace.visualstudio.com
